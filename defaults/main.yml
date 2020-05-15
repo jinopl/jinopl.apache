@@ -1,2 +1,7 @@
 ---
 # defaults file for jinopl.apache
+domainName: foo.com
+docRoot: /var/www/html
+normalUser: apache
+ifSubDomain: false
+setasuserwriteable: false

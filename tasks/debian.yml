@@ -1,3 +1,73 @@
-- name: Molecule Hello World!
+- name: Testing Ansible in os
   debug:
-    msg: Hello, World from debian
+    msg:
+      - Hello from  {{ ansible_distribution }} {{ ansible_distribution_version }}
+      - Hostname is {{ ansible_hostname }}
+
+- name: Update cache
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Override variables for redhat
+  set_fact:
+    apacheUsername: www-data
+
+- name: install aptitude
+  apt:
+    name: aptitude
+    state: present
+
+- name: install apache2
+  apt:
+    name: apache2
+    state: present
+
+- name: install apache2 utils
+  apt:
+    name: apache2-utils
+    state: present
+
+- name: Enable rewrite
+  apache2_module:
+    name: rewrite
+    state: present
+  notify: restart apache2
+
+- name: Setting up virtual host
+  template:
+    src: apache2.conf.j2
+    dest: "/etc/apache2/sites-available/{{ domainName }}.conf"
+
+- name: Enable site "{{ domainName }}"
+  command: /usr/sbin/a2ensite {{ domainName }}.conf
+  args:
+    creates: /etc/apache2/sites-enabled/{{ domainName }}.conf
+  notify: restart apache2
+
+- name: Remove server Alias from vh if subdomain
+  lineinfile:
+    path: /etc/apache2/sites-available/{{ domainName }}.conf
+    regexp: "ServerAlias"
+    state: absent
+    backup: yes
+  when: ifSubDomain
+
+- name: Copy a web page.
+  copy:
+    content: |
+      <html>
+      <head><title>Hello world!</title></head>
+      <body>Hello world!</body>
+      </html>
+    dest: "/var/www/html/index.html"
+
+- name: Changing document root folder permission
+  file:
+    path: /var/www/html
+    state: directory
+    recurse: yes
+    owner: "{{ normalUser }}"
+    group: "{{ apacheUsername }}"
+    mode: '0775'
+  notify: restart apache2

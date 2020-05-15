@@ -1,3 +1,54 @@
-- name: Molecule Hello World!
+- name: Testing Ansible in os
   debug:
-    msg: Hello, World from rhel
+    msg:
+      - Hello from {{ ansible_distribution }} {{ ansible_distribution_version }}
+      - Hostname is {{ ansible_hostname }}
+
+- name: Override variables for redhat
+  set_fact:
+    apacheUsername: httpd
+
+- name: install httpd
+  yum:
+    name: httpd
+    state: present
+
+- name: enabling httpd on boot
+  service:
+    name: httpd
+    state: started
+    enabled: yes
+
+- name: setting up virtual host
+  template:
+    src: apache2.conf.j2
+    dest: /etc/httpd/conf.d/{{ domainName }}.conf
+  notify: restart httpd
+
+- name: Remove server Alias from vh if subdomain
+  lineinfile:
+    path: /etc/httpd/conf.d/{{ domainName }}.conf
+    regexp: "ServerAlias"
+    state: absent
+    backup: yes
+  when: ifSubDomain
+
+- name: Copy a web page.
+  copy:
+    content: |
+      <html>
+      <head><title>Hello world!</title></head>
+      <body>Hello world!</body>
+      </html>
+    dest: "/var/www/html/index.html"
+
+- name: Changing document root folder permission
+  file:
+    path: "{{ docRoot }}"
+    state: directory
+    recurse: yes
+    owner: "{{ normalUser }}"
+    group: "{{ apacheUsername }}"
+    mode: '0775'
+  notify: restart httpd
+  when: setasuserwriteable

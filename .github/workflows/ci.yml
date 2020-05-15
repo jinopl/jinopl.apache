@@ -17,7 +17,7 @@ jobs:
           - centos8
           - debian10
           - centos7
-          - ubuntu
+          - ubuntu1804
 
     steps:
       - name: Check out the codebase.

@@ -71,3 +71,4 @@
     group: "{{ apacheUsername }}"
     mode: '0775'
   notify: restart apache2
+  when: setasuserwriteable

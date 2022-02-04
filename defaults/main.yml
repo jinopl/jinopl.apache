@@ -5,3 +5,7 @@ docRoot: /var/www/html
 normalUser: apache
 ifSubDomain: false
 setasuserwriteable: false
+
+#Apache Modules
+rewrite_module: True
+remoteip_module: False

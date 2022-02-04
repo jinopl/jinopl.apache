@@ -33,6 +33,7 @@
     name: rewrite
     state: present
   notify: restart apache2
+  when: rewrite_module
 
 - name: Setting up virtual host
   template:
